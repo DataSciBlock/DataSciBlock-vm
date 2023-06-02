@@ -36,7 +36,10 @@ const base = {
             })
         ]
     },
-    plugins: []
+    plugins: [],
+    resolve: {
+        symlinks: false
+    }
 };
 
 module.exports = [
