@@ -41,7 +41,17 @@ const ArgumentType = {
     /**
      * Inline image on block (as part of the label)
      */
-    IMAGE: 'image'
+    IMAGE: 'image',
+
+    /**
+     * Dataframe value with text field
+     */
+    DATAFRAME: 'dataframe',
+
+    /**
+     * Series value
+     */
+    SERIES: 'series'
 };
 
 module.exports = ArgumentType;
