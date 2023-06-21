@@ -84,6 +84,15 @@ class Scratch3DataSciBlocks {
         });
     }
 
+    _buildMenu (info) {
+        return info.map((entry, index) => {
+            const obj = {};
+            obj.text = entry.name;
+            obj.value = String(index + 1);
+            return obj;
+        });
+    }
+
     // /**
     //  * An array of info about each drum.
     //  * @type {object[]}
@@ -91,7 +100,7 @@ class Scratch3DataSciBlocks {
     //  * @param {string} fileName - the name of the audio file containing the drum sound.
     //  */
     // get DATASET_INFO () {
-    //     return 
+    //     return
     // }
 
     /**
@@ -212,12 +221,11 @@ class Scratch3DataSciBlocks {
                     arguments: {
                         NAME: {
                             defaultValue: 'DATASET',
-
+                            // menu: 'DATAFRAME',
                             type: ArgumentType.STRING
                         },
                         LINES: {
                             defaultValue: 20,
-                            
                             type: ArgumentType.NUMBER
                         }
                     }
@@ -420,7 +428,13 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 }
-            ]
+            ],
+            menus: {
+                DATAFRAME: {
+                    acceptReporters: true,
+                    items: this._buildMenu(this.DATASET_INFO)
+                }
+            }
         };
     }
 
@@ -433,8 +447,14 @@ class Scratch3DataSciBlocks {
     uploadCSV ({NAME}) {
         // get csv from ../data/shark_attacks.csv
     
+        // check if csv is already loaded
+        const loaded = this._datasets.find(dataset => dataset.name === NAME);
+        if (loaded) {
+            return;
+        }
         const input = document.createElement('input');
         input.type = 'file';
+        input.accept = '.csv';
     
         input.onchange = e => {
             // getting a hold of the file reference
@@ -449,20 +469,21 @@ class Scratch3DataSciBlocks {
                 const content = readerEvent.target.result; // this is the content!
                 console.log(content, 'cont');
                 dfd.readCSV(content)
-                .then(dataframe => {
-                    dataframe.print();
-                    this._datasets.push(dataframe); // push resolved dataframe
-                    this.DATASET_INFO.push({
-                        name: formatMessage({
-                            id: `datasets.${NAME}`,
-                            default: NAME
-                        }),
-                        fileName: file.name
+                    .then(dataframe => {
+                        dataframe.print();
+                        this._datasets.push(dataframe); // push resolved dataframe
+                        this.DATASET_INFO.push({
+                            name: formatMessage({
+                                id: `datasets.${NAME}`,
+                                default: NAME
+                            }),
+                            fileName: file.name
+                        });
+                        this.getInfo().menus.DATAFRAME.items = this._buildMenu(this.DATASET_INFO);
+                    })
+                    .catch(error => {
+                        console.error('Error reading CSV:', error);
                     });
-                })
-                .catch(error => {
-                    console.error('Error reading CSV:', error);
-                });
     
             };
     
