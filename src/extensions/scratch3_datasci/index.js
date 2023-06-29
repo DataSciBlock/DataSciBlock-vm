@@ -6,6 +6,7 @@ const dfd = require('danfojs');
 // const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const StageLayering = require('../../engine/stage-layering');
+const RenderWebGL = require('../../../../scratch-render/src');
 /**
  * The instrument and drum sounds, loaded as static assets.
  * @type {object}
@@ -26,6 +27,12 @@ class Scratch3DataSciBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        /**
+         * The renderer for this VM runtime.
+         * @type {RenderWebGL}
+         */
+        this.renderer = runtime.renderer;
 
         /**
          * An array of datasets.
@@ -370,6 +377,17 @@ class Scratch3DataSciBlocks {
                             type: ArgumentType.SERIES
                         }
                     }
+                },
+                {
+                    opcode: 'showTable',
+                    blockType: BlockType.COMMAND,
+                    text: 'Show Table [DF]',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.DATAFRAME
+                        }
+                    }
                 }
             ],
             menus: {
@@ -461,6 +479,18 @@ class Scratch3DataSciBlocks {
         return df.head(LINES);
     }
 
+    initDrawable () {
+        if (this.renderer) {
+            this.drawableID = this.renderer.createDrawable(StageLayering.LAYER_GROUPS.BACKGROUND);
+        }
+        // If we're a clone, start the hats.
+        if (!this.isOriginal) {
+            this.runtime.startHats(
+                'control_start_as_clone', null, this
+            );
+        }
+    }
+
     /**
      * implementation of the block with the opcode that matches this name
      *  this will be called when the block is used
@@ -471,16 +501,28 @@ class Scratch3DataSciBlocks {
         try {
             const series = SERIES;
             series.print();
+            // const renderer = this.runtime.renderer;
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+            // console.log(renderer.canvas, 'canvas');
+            // const drawableId = renderer.createDrawable(StageLayering.VIDEO_LAYER);
             // create a div with id 'bar_graph' to plot the bar graph in
             const div = document.createElement('div');
             div.id = 'bar_graph';
-            div.style.width = '500px';
-            div.style.height = '500px';
+            div.style = canvas.style;
             document.body.appendChild(div);
             series.plot('bar_graph').bar();
 
       
-            // const canvas = document.querySelector('canvas');
+            // this._drawable = renderer.createDrawable(StageLayering.VIDEO_LAYER);
+            // const ctx = canvas.getContext('2d');
+
+            // Set the fill color to red
+            // ctx.fillStyle = 'red';
+
+            // Draw a rectangle at position (10, 10) with width 50 and height 50
+            // ctx.fillRect(10, 10, 50, 50);
+            
             // console.log(canvas);
           
             // // Create a new canvas element
@@ -491,13 +533,32 @@ class Scratch3DataSciBlocks {
             // overlayCanvas.style.zIndex = 100;
             // overlayCanvas.style.top = 0;
             // overlayCanvas.style.left = 0;
-            const htmlCanvas = document.getElementById('html-canvas');
-            htmlCanvas.style.zIndex = 100;
-           
+            // htmlCanvas.style.zIndex = 100;
 
             htmlCanvas.innerHTML = div.outerHTML;
 
-            
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
+    }
+    showTable ({DF}) {
+        try {
+            const df = DF;
+      
+            const htmlCanvas = document.getElementById('html-canvas');
+            const existingDiv = document.getElementById('table');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+            const div = document.createElement('div');
+            div.id = 'table';
+            div.style = htmlCanvas.style;
+            document.body.appendChild(div);
+            df.plot('table').table();
+      
+            htmlCanvas.innerHTML = div.outerHTML;
+      
             return;
         } catch (err) {
             console.log(err, 'Error plotting');
