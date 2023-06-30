@@ -175,34 +175,11 @@ class Scratch3DataSciBlocks {
 
                     arguments: {
                         NAME: {
-                            defaultValue: 'DATASET',
-                            // menu: 'DATAFRAME',
-                            type: ArgumentType.STRING
+                            type: ArgumentType.STRING,
+                            menu: 'DATAFRAME'
                         },
                         LINES: {
                             defaultValue: 20,
-                            type: ArgumentType.NUMBER
-                        }
-                    }
-                },
-                {
-                    // name of the function where your block code lives
-                    opcode: 'sharkAttackData',
-
-                    blockType: BlockType.REPORTER,
-
-                    // label to display on the block
-                    text: 'Dataframe of Sharks Attacks [LINES] people',
-
-                    // true if this block should end a stack
-                    terminal: false,
-
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-
-                    arguments: {
-                        LINES: {
-                            defaultValue: 20,
-
                             type: ArgumentType.NUMBER
                         }
                     }
@@ -337,10 +314,6 @@ class Scratch3DataSciBlocks {
                     // true if this block should end a stack
                     terminal: false,
 
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
                     filter: [TargetType.SPRITE, TargetType.STAGE],
                     arguments: {
                         SERIES: {
@@ -353,13 +326,8 @@ class Scratch3DataSciBlocks {
                     blockType: BlockType.REPORTER,
                     text: 'standard deviation of [SERIES]',
 
-                    // true if this block should end a stack
                     terminal: false,
 
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
                     filter: [TargetType.SPRITE, TargetType.STAGE],
                     arguments: {
                         SERIES: {
@@ -392,11 +360,16 @@ class Scratch3DataSciBlocks {
             ],
             menus: {
                 DATAFRAME: {
-                    acceptReporters: true,
-                    items: this._buildMenu(this.DATASET_INFO)
+                    // acceptReporters: true,
+                    // items: this._buildMenu(this.DATASET_INFO),
+                    items: 'getDataframeMenuItems'
                 }
             }
         };
+    }
+
+    getDataframeMenuItems () {
+        return this._buildMenu(this.DATASET_INFO);
     }
 
     /**
@@ -408,9 +381,13 @@ class Scratch3DataSciBlocks {
     uploadCSV ({NAME}) {
         // get csv from ../data/shark_attacks.csv
 
-        // check if csv is already loaded
-        const loaded = this._datasets.find(dataset => dataset.name === NAME);
+        const loaded = this.DATASET_INFO.find(dataset => {
+            console.log(dataset.name, NAME);
+            return dataset.name.includes(NAME);
+        });
+
         if (loaded) {
+            console.log('already loaded');
             return;
         }
         const input = document.createElement('input');
@@ -428,7 +405,6 @@ class Scratch3DataSciBlocks {
             // here we tell the reader what to do when it's done reading...
             reader.onloadend = readerEvent => {
                 const content = readerEvent.target.result; // this is the content!
-                console.log(content, 'cont');
                 dfd.readCSV(content)
                     .then(dataframe => {
                         dataframe.print();
@@ -436,7 +412,9 @@ class Scratch3DataSciBlocks {
                         this.DATASET_INFO.push({
                             name: formatMessage({
                                 id: `datasets.${NAME}`,
-                                default: NAME
+                                default: `(${
+                                    this.DATASET_INFO.length + 1
+                                }) ${NAME}`
                             }),
                             fileName: file.name
                         });
@@ -451,7 +429,7 @@ class Scratch3DataSciBlocks {
         };
 
         input.click();
-        // return df.head(LINES);
+        return;
     }
 
     /**
@@ -464,9 +442,7 @@ class Scratch3DataSciBlocks {
      */
     uploadedDataframe ({NAME, LINES}) {
         // get csv from ../data/shark_attacks.csv
-        const index = this.DATASET_INFO.findIndex(info => info.name === NAME);
-        console.log(this.DATASET_INFO, 'info', NAME, index);
-
+        const index = NAME - 1;
         if (index === -1) {
             console.error('No dataset found with name:', NAME);
             return new dfd.DataFrame();
@@ -563,22 +539,6 @@ class Scratch3DataSciBlocks {
         } catch (err) {
             console.log(err, 'Error plotting');
         }
-    }
-
-    /**
-     * implementation of the block with the opcode that matches this name
-     *  this will be called when the block is used
-     * @param {object} args - the block arguments
-     * @param {number} args.LINES - the number argument
-     * @returns {Array.<{caseNumber: number, gender: string, age: number, activity: string}>} the result of the block (an array of objects with caseNumber, gender, age, and activity properties)
-     */
-    sharkAttackData ({LINES}) {
-        // get csv from ../data/shark_attacks.csv
-
-        const df = this._datasets[0];
-        df.print();
-
-        return df.head(LINES);
     }
 
     /**
