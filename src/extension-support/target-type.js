@@ -11,7 +11,9 @@ const TargetType = {
     /**
      * Rendered target which cannot move but can change backdrops
      */
-    STAGE: 'stage'
+    STAGE: 'stage',
+
+    DATAFRAME: 'dataframe'
 };
 
 module.exports = TargetType;

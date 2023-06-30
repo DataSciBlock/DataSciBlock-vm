@@ -5,6 +5,8 @@
 
 const uid = require('../util/uid');
 const xmlEscape = require('../util/xml-escape');
+const dfd = require('danfojs');
+
 
 class Variable {
     /**
@@ -28,6 +30,9 @@ class Variable {
             break;
         case Variable.BROADCAST_MESSAGE_TYPE:
             this.value = this.name;
+            break;
+        case Variable.DATAFRAME_TYPE:
+            this.value = new dfd.DataFrame();
             break;
         default:
             throw new Error(`Invalid variable type: ${this.type}`);
@@ -64,6 +69,10 @@ class Variable {
      */
     static get BROADCAST_MESSAGE_TYPE () {
         return 'broadcast_msg';
+    }
+
+    static get DATAFRAME_TYPE () {
+        return 'dataframe';
     }
 }
 

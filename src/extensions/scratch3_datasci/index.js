@@ -5,6 +5,8 @@ const dfd = require('danfojs');
 
 // const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
+const StageLayering = require('../../engine/stage-layering');
+const RenderWebGL = require('../../../../scratch-render/src');
 /**
  * The instrument and drum sounds, loaded as static assets.
  * @type {object}
@@ -25,6 +27,12 @@ class Scratch3DataSciBlocks {
          * @type {Runtime}
          */
         this.runtime = runtime;
+
+        /**
+         * The renderer for this VM runtime.
+         * @type {RenderWebGL}
+         */
+        this.renderer = runtime.renderer;
 
         /**
          * An array of datasets.
@@ -129,59 +137,6 @@ class Scratch3DataSciBlocks {
 
             // your Scratch blocks
             blocks: [
-                // {
-                //     // name of the function where your block code lives
-                //     opcode: "myFirstBlock",
-
-                //     // type of block - choose from:
-                //     //   BlockType.REPORTER - returns a value, like "direction"
-                //     //   BlockType.BOOLEAN - same as REPORTER but returns a true/false value
-                //     //   BlockType.COMMAND - a normal command block, like "move {} steps"
-                //     //   BlockType.HAT - starts a stack if its value changes from false to true ("edge triggered")
-                //     blockType: BlockType.REPORTER,
-
-                //     // label to display on the block
-                //     text: "My first block [MY_NUMBER] and [MY_STRING]",
-
-                //     // true if this block should end a stack
-                //     terminal: false,
-
-                //     // where this block should be available for code - choose from:
-                //     //   TargetType.SPRITE - for code in sprites
-                //     //   TargetType.STAGE  - for code on the stage / backdrop
-                //     // remove one of these if this block doesn't apply to both
-                //     filter: [TargetType.SPRITE, TargetType.STAGE],
-
-                //     // arguments used in the block
-                //     arguments: {
-                //         MY_NUMBER: {
-                //             // default value before the user sets something
-                //             defaultValue: 123,
-
-                //             // type/shape of the parameter - choose from:
-                //             //     ArgumentType.ANGLE - numeric value with an angle picker
-                //             //     ArgumentType.BOOLEAN - true/false value
-                //             //     ArgumentType.COLOR - numeric value with a colour picker
-                //             //     ArgumentType.NUMBER - numeric value
-                //             //     ArgumentType.STRING - text value
-                //             //     ArgumentType.NOTE - midi music value with a piano picker
-                //             type: ArgumentType.NUMBER,
-                //         },
-                //         MY_STRING: {
-                //             // default value before the user sets something
-                //             defaultValue: "hello",
-
-                //             // type/shape of the parameter - choose from:
-                //             //     ArgumentType.ANGLE - numeric value with an angle picker
-                //             //     ArgumentType.BOOLEAN - true/false value
-                //             //     ArgumentType.COLOR - numeric value with a colour picker
-                //             //     ArgumentType.NUMBER - numeric value
-                //             //     ArgumentType.STRING - text value
-                //             //     ArgumentType.NOTE - midi music value with a piano picker
-                //             type: ArgumentType.STRING,
-                //         },
-                //     },
-                // },
                 {
                     // name of the function where your block code lives
                     opcode: 'uploadCSV',
@@ -232,17 +187,8 @@ class Scratch3DataSciBlocks {
                 {
                     opcode: 'dropNa',
                     blockType: BlockType.REPORTER,
-
-                    // label to display on the block
                     text: 'DropNa of df: [DF]',
-
-                    // true if this block should end a stack
                     terminal: false,
-
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
                     filter: [TargetType.SPRITE, TargetType.STAGE],
 
                     // arguments used in the block
@@ -339,34 +285,27 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
-                // {
-                //     opcode: "mode",
-                //     blockType: BlockType.REPORTER,
+                {
+                    opcode: 'mode',
+                    blockType: BlockType.REPORTER,
 
-                //     // label to display on the block
-                //     text: "mode of [DF] column: [COLUMN]",
+                    // label to display on the block
+                    text: 'mode of [SERIES]',
 
-                //     // true if this block should end a stack
-                //     terminal: false,
+                    // true if this block should end a stack
+                    terminal: false,
 
-                //     // where this block should be available for code - choose from:
-                //     //   TargetType.SPRITE - for code in sprites
-                //     //   TargetType.STAGE  - for code on the stage / backdrop
-                //     // remove one of these if this block doesn't apply to both
-                //     filter: [TargetType.SPRITE, TargetType.STAGE],
-
-                //     // arguments used in the block
-                //     arguments: {
-                //         DF: {
-                //             type: ArgumentType.DATAFRAME,
-                //         },
-                //         COLUMN: {
-                //             defaultValue: "age",
-
-                //             type: ArgumentType.STRING,
-                //         },
-                //     },
-                // },
+                    // where this block should be available for code - choose from:
+                    //   TargetType.SPRITE - for code in sprites
+                    //   TargetType.STAGE  - for code on the stage / backdrop
+                    // remove one of these if this block doesn't apply to both
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
                 {
                     opcode: 'median',
                     blockType: BlockType.REPORTER,
@@ -395,6 +334,28 @@ class Scratch3DataSciBlocks {
                             type: ArgumentType.SERIES
                         }
                     }
+                },
+                {
+                    opcode: 'plotBarSeries',
+                    blockType: BlockType.COMMAND,
+                    text: 'plot bar chart of Series [SERIES]',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
+                    opcode: 'showTable',
+                    blockType: BlockType.COMMAND,
+                    text: 'Show Table [DF]',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.DATAFRAME
+                        }
+                    }
                 }
             ],
             menus: {
@@ -419,10 +380,12 @@ class Scratch3DataSciBlocks {
      */
     uploadCSV ({NAME}) {
         // get csv from ../data/shark_attacks.csv
+
         const loaded = this.DATASET_INFO.find(dataset => {
             console.log(dataset.name, NAME);
             return dataset.name.includes(NAME);
         });
+
         if (loaded) {
             console.log('already loaded');
             return;
@@ -490,6 +453,92 @@ class Scratch3DataSciBlocks {
         df.print();
 
         return df.head(LINES);
+    }
+
+    initDrawable () {
+        if (this.renderer) {
+            this.drawableID = this.renderer.createDrawable(StageLayering.LAYER_GROUPS.BACKGROUND);
+        }
+        // If we're a clone, start the hats.
+        if (!this.isOriginal) {
+            this.runtime.startHats(
+                'control_start_as_clone', null, this
+            );
+        }
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {string} args.SERIES - the series to plot
+     */
+    plotBarSeries ({SERIES}) {
+        try {
+            const series = SERIES;
+            series.print();
+            // const renderer = this.runtime.renderer;
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+            // console.log(renderer.canvas, 'canvas');
+            // const drawableId = renderer.createDrawable(StageLayering.VIDEO_LAYER);
+            // create a div with id 'bar_graph' to plot the bar graph in
+            const div = document.createElement('div');
+            div.id = 'bar_graph';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+            series.plot('bar_graph').bar();
+
+      
+            // this._drawable = renderer.createDrawable(StageLayering.VIDEO_LAYER);
+            // const ctx = canvas.getContext('2d');
+
+            // Set the fill color to red
+            // ctx.fillStyle = 'red';
+
+            // Draw a rectangle at position (10, 10) with width 50 and height 50
+            // ctx.fillRect(10, 10, 50, 50);
+            
+            // console.log(canvas);
+          
+            // // Create a new canvas element
+            // const overlayCanvas = document.createElement('div');
+            // overlayCanvas.width = canvas.width;
+            // overlayCanvas.height = canvas.height;
+            // overlayCanvas.style.position = 'absolute';
+            // overlayCanvas.style.zIndex = 100;
+            // overlayCanvas.style.top = 0;
+            // overlayCanvas.style.left = 0;
+            // htmlCanvas.style.zIndex = 100;
+
+            htmlCanvas.innerHTML = div.outerHTML;
+
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
+    }
+    showTable ({DF}) {
+        try {
+            const df = DF;
+      
+            const htmlCanvas = document.getElementById('html-canvas');
+            const existingDiv = document.getElementById('table');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+            const div = document.createElement('div');
+            div.id = 'table';
+            div.style = htmlCanvas.style;
+            document.body.appendChild(div);
+            df.plot('table').table();
+      
+            htmlCanvas.innerHTML = div.outerHTML;
+      
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
     }
 
     /**
