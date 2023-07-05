@@ -185,8 +185,73 @@ class Scratch3DataSciBlocks {
                     }
                 },
                 {
+                    opcode: 'replaceValueColumn',
+                    blockType: BlockType.COMMAND,
+                    text: 'replace [VALUE] to [REPLACEMENT] for [DF] column: [COLUMN]',
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                    // arguments used in the block
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.STRING,
+                            menu: 'DATAFRAME'
+                        },
+                        COLUMN: {
+                            type: ArgumentType.STRING,
+                            menu: 'COLUMN'
+                        },
+                        VALUE: {
+                            defaultValue: 'NaN',
+
+                            type: ArgumentType.STRING
+                        },
+                        REPLACEMENT: {
+                            defaultValue: '0',
+
+                            type: ArgumentType.STRING
+
+                        }
+                    }
+                },
+                {
+                    opcode: 'onlyType',
+                    blockType: BlockType.COMMAND,
+                    text: 'convert [SERIES] to [TYPE]',
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    // arguments used in the block
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        },
+                        TYPE: {
+                            type: ArgumentType.STRING,
+                            menu: 'TYPE'
+                        }
+                    }
+                },
+                {
+                    opcode: 'dropColumn',
+                    blockType: BlockType.COMMAND,
+                    text: 'drop [COLUMN] of [DF]',
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    // arguments used in the block
+                    arguments: {
+                        COLUMN: {
+                            type: ArgumentType.STRING,
+                            menu: 'COLUMN'
+                        },
+                        DF: {
+                            type: ArgumentType.DATAFRAME,
+                            menu: 'DATAFRAME'
+                        }
+                    }
+                },
+                {
                     opcode: 'dropNa',
-                    blockType: BlockType.REPORTER,
+                    blockType: BlockType.COMMAND,
                     text: 'DropNa of df: [DF]',
                     terminal: false,
                     filter: [TargetType.SPRITE, TargetType.STAGE],
@@ -205,7 +270,7 @@ class Scratch3DataSciBlocks {
                 },
                 {
                     opcode: 'dropNaSeries',
-                    blockType: BlockType.REPORTER,
+                    blockType: BlockType.COMMAND,
 
                     // label to display on the block
                     text: 'DropNa of series: [SERIES]',
@@ -240,6 +305,24 @@ class Scratch3DataSciBlocks {
                         COLUMN: {
                             defaultValue: 'age',
                             type: ArgumentType.STRING
+                        }
+                    }
+                },
+                {
+                    opcode: 'rowFromDataframe',
+                    blockType: BlockType.REPORTER,
+                    text: 'Row from df: [DF] index: [INDEX]',
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                    // arguments used in the block
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.DATAFRAME
+                        },
+                        INDEX: {
+                            defaultValue: 0,
+                            type: ArgumentType.NUMBER
                         }
                     }
                 },
@@ -336,6 +419,20 @@ class Scratch3DataSciBlocks {
                     }
                 },
                 {
+                    opcode: 'countUniqueValues',
+                    blockType: BlockType.REPORTER,
+                    text: 'value counts of [SERIES]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
                     opcode: 'plotBarSeries',
                     blockType: BlockType.COMMAND,
                     text: 'plot bar chart of Series [SERIES]',
@@ -360,16 +457,59 @@ class Scratch3DataSciBlocks {
             ],
             menus: {
                 DATAFRAME: {
-                    // acceptReporters: true,
+                    acceptReporters: true,
                     // items: this._buildMenu(this.DATASET_INFO),
                     items: 'getDataframeMenuItems'
+                },
+                COLUMN: {
+                    items: 'getColumnsMenuItems'
+
+                },
+                TYPE: {
+                    items: ['float32', 'int32', 'string', 'boolean', 'undefined']
                 }
             }
         };
     }
 
     getDataframeMenuItems () {
-        return this._buildMenu(this.DATASET_INFO);
+        return this.DATASET_INFO.map((entry, index) => {
+            const obj = {};
+            obj.text = entry.name;
+            obj.value = String(index + 1);
+            return obj;
+        });
+    }
+
+    getColumnsMenuItems () {
+       
+        const arr = [];
+        this.DATASET_INFO.map((entry, index) => {
+            const columns = this.getDFfromIndex(index + 1).axis.columns;
+            columns.map((column, i) => {
+                if (!column) return null;
+                const obj = {};
+                obj.text = column;
+                obj.value = column;
+                arr.push(obj);
+                return obj;
+            }
+            );
+        });
+
+        return (arr.length > 0) ? arr : ['select', 'loading'];
+        
+    }
+
+    getDFfromIndex (index) {
+        const i = index - 1;
+        if (i === -1) {
+            console.error('No dataset found with name:', index);
+            return new dfd.DataFrame();
+        }
+        // this._datasets[i].print();
+
+        return this._datasets[i] || new dfd.DataFrame();
     }
 
     /**
@@ -437,22 +577,18 @@ class Scratch3DataSciBlocks {
      *  this will be called when the block is used
      * @param {object} args - the block arguments
      * @param {string} args.NAME - the number argument
-     * @param {number} args.LINES - the number argument
+     * @param {number?} args.LINES - the number argument
      * @returns {Array.<{caseNumber: number, gender: string, age: number, activity: string}>} the result of the block (an array of objects with caseNumber, gender, age, and activity properties)
      */
     uploadedDataframe ({NAME, LINES}) {
         // get csv from ../data/shark_attacks.csv
-        const index = NAME - 1;
-        if (index === -1) {
-            console.error('No dataset found with name:', NAME);
-            return new dfd.DataFrame();
-        }
-
-        console.log(index, 'index');
-        const df = this._datasets[index];
+        const df = this.getDFfromIndex(NAME);
         df.print();
+        console.log('LINES', LINES, typeof LINES);
 
-        return df.head(LINES);
+
+        return LINES <= 0 ? df : df.head(LINES);
+        
     }
 
     initDrawable () {
@@ -480,37 +616,18 @@ class Scratch3DataSciBlocks {
             // const renderer = this.runtime.renderer;
             const canvas = this.renderer.canvas;
             const htmlCanvas = document.getElementById('html-canvas');
-            // console.log(renderer.canvas, 'canvas');
-            // const drawableId = renderer.createDrawable(StageLayering.VIDEO_LAYER);
-            // create a div with id 'bar_graph' to plot the bar graph in
+            
+            const existingDiv = document.getElementById('bar_graph');
+
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+
             const div = document.createElement('div');
             div.id = 'bar_graph';
             div.style = canvas.style;
             document.body.appendChild(div);
             series.plot('bar_graph').bar();
-
-      
-            // this._drawable = renderer.createDrawable(StageLayering.VIDEO_LAYER);
-            // const ctx = canvas.getContext('2d');
-
-            // Set the fill color to red
-            // ctx.fillStyle = 'red';
-
-            // Draw a rectangle at position (10, 10) with width 50 and height 50
-            // ctx.fillRect(10, 10, 50, 50);
-            
-            // console.log(canvas);
-          
-            // // Create a new canvas element
-            // const overlayCanvas = document.createElement('div');
-            // overlayCanvas.width = canvas.width;
-            // overlayCanvas.height = canvas.height;
-            // overlayCanvas.style.position = 'absolute';
-            // overlayCanvas.style.zIndex = 100;
-            // overlayCanvas.style.top = 0;
-            // overlayCanvas.style.left = 0;
-            // htmlCanvas.style.zIndex = 100;
-
             htmlCanvas.innerHTML = div.outerHTML;
 
             return;
@@ -518,15 +635,18 @@ class Scratch3DataSciBlocks {
             console.log(err, 'Error plotting');
         }
     }
+
     showTable ({DF}) {
         try {
             const df = DF;
       
             const htmlCanvas = document.getElementById('html-canvas');
             const existingDiv = document.getElementById('table');
+
             if (existingDiv) {
                 htmlCanvas.removeChild(existingDiv);
             }
+
             const div = document.createElement('div');
             div.id = 'table';
             div.style = htmlCanvas.style;
@@ -554,6 +674,13 @@ class Scratch3DataSciBlocks {
         return series;
     }
 
+    rowFromDataframe ({DF, INDEX}) {
+        const df = DF;
+        const row = df.loc({rows: [INDEX]});
+        row.print();
+        return row;
+    }
+
     /**
      * implementation of the block with the opcode that matches this name
      * this will be called when the block is used
@@ -564,11 +691,10 @@ class Scratch3DataSciBlocks {
      *
      */
     dropNa ({DF}) {
-        const df = DF;
-        df.dropNa({axis: 1, inplace: true});
-        console.log(df, 'dropna');
-        df.print();
-        return df;
+        DF.dropNa({axis: 1, inplace: true});
+        console.log(DF, 'dropna');
+        DF.print();
+        return DF;
     }
 
     /**
@@ -586,6 +712,56 @@ class Scratch3DataSciBlocks {
         return series;
     }
 
+    replaceValueColumn ({DF, COLUMN, VALUE, REPLACEMENT}) {
+
+        try {
+            console.log(VALUE, isNaN(VALUE), typeof VALUE, 'VALUE');
+
+            const df = this.uploadedDataframe({NAME: DF});
+
+            console.log(df, 'df', VALUE, REPLACEMENT, COLUMN);
+
+            df.replace(VALUE, REPLACEMENT, {columns: [COLUMN], inplace: true});
+            // replacedDF.print();
+
+
+            // return replacedDF;
+            return df;
+        } catch (err) {
+            console.log(err, 'Error replacing value');
+        }
+
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.Series} args.SERIES - the dataframe argument
+     * @param {string} args.TYPE - the value argument
+     * @returns {dfd.DataFrame} the result of the block
+     *
+     */
+    onlyType ({SERIES, TYPE}) {
+        const typedSeries = SERIES.asType(TYPE, {inplace: true});
+        return typedSeries;
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame} args.DF - the dataframe argument
+     * @param {dfd.String} args.COLUMN - the dataframe argument
+     * @returns {dfd.DataFrame} the result of the block
+     *
+     */
+    dropColumn ({DF, COLUMN}) {
+        const df = DF;
+        df.drop({columns: [COLUMN], inplace: true});
+        return df;
+    }
+
     /**
      * implementation of the block with the opcode that matches this name
      * this will be called when the block is used
@@ -597,6 +773,11 @@ class Scratch3DataSciBlocks {
         // get csv from ../data/shark_attacks.csv
 
         const series = SERIES;
+        if (series.ndim === 2) {
+            const shape = series.shape;
+
+            return shape[0];
+        }
 
         console.log(series.count());
         return series.count();
@@ -675,6 +856,23 @@ class Scratch3DataSciBlocks {
 
         series.print();
         return series.std();
+    }
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.Series} args.SERIES - the dataframe argument
+     * @returns {number} the result of the block
+     */
+    countUniqueValues ({SERIES}) {
+        const series = SERIES;
+
+        const valueCounts = series.valueCounts();
+        valueCounts.print(100);
+
+        console.log(valueCounts, 'valueCounts');
+
+        return valueCounts;
     }
 }
 
