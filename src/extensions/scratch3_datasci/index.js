@@ -184,6 +184,7 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'replaceValueColumn',
                     blockType: BlockType.COMMAND,
@@ -249,6 +250,26 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                // {
+                //     opcode: 'labelEncode',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'Encode label df: [DF] col: [COLUMN]',
+                //     terminal: false,
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                //     // arguments used in the block
+                //     arguments: {
+                //         DF: {
+                //             type: ArgumentType.DATAFRAME
+                //         },
+                //         COLUMN: {
+                //             defaultValue: 'age',
+
+                //             type: ArgumentType.STRING
+                //         }
+                //     }
+                // },
+                '---',
                 {
                     opcode: 'dropNa',
                     blockType: BlockType.COMMAND,
@@ -290,6 +311,7 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'seriesFromCol',
                     blockType: BlockType.REPORTER,
@@ -326,6 +348,7 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'countSeries',
                     blockType: BlockType.REPORTER,
@@ -432,6 +455,7 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                '---',
                 {
                     opcode: 'plotBarSeries',
                     blockType: BlockType.COMMAND,
@@ -443,6 +467,58 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'plotScatter',
+                    blockType: BlockType.COMMAND,
+                    text: 'plot scatter plot [DF] with config [config]',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.DATAFRAME
+                        },
+                        config: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'x,y'
+                        }
+                    }
+                },
+                {
+                    opcode: 'plotLine',
+                    blockType: BlockType.COMMAND,
+                    text: 'plot line plot [DATA] with ',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        DATA: {
+                            type: ArgumentType.DATAFRAME || ArgumentType.SERIES
+                        },
+                        config: {
+                            type: ArgumentType.STRING,
+                            defaultValue: 'x,y'
+                        }
+                    }
+                },
+                // {
+                //     opcode: 'plotPie',
+                //     blockType: BlockType.COMMAND,
+                //     text: 'plot pie plot [DATA] col [VALUE] for value, label [LABEL]  ',
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         DATA: {
+                //             type: ArgumentType.DATAFRAME || ArgumentType.SERIES
+                //         },
+                //         config: {
+                //             type: ArgumentType.STRING,
+                //             defaultValue: 'x,y'
+                //         },
+                //         VALUE: {
+                //             type: ArgumentType.STRING
+                //         },
+                //         LABEL: {
+                //             type: ArgumentType.STRING
+                //             // defaultValue: 'x,y'
+                //         }
+                //     }
+                // },
                 {
                     opcode: 'showTable',
                     blockType: BlockType.COMMAND,
@@ -630,6 +706,216 @@ class Scratch3DataSciBlocks {
             series.plot('bar_graph').bar();
             htmlCanvas.innerHTML = div.outerHTML;
 
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
+    }
+
+    /**
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame} args.DF - the dataframe argument
+     * @param {string} args.COLUMN - the column argument
+     * @returns {string[]} the result of the block
+     *
+     */
+    labelEncode ({DF, COLUMN}) {
+        try {
+            const df = DF;
+            const labels = {};
+            df.applyMap({
+                column: COLUMN,
+                mapper: label => {
+                    if (!(label in labels)) {
+                        // Assign a new number if the activity is not in the mapping
+                        const newNumber = Object.keys(labels).length + 1;
+                        labels[label] = newNumber;
+                    }
+                    return labels[label];
+                },
+                new_col_name: `${COLUMN}_label`
+            }, {inplace: true});
+
+            return labels;
+        } catch (err) {
+            console.log(err, 'Error encoding');
+            return [];
+        }
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame} args.DF - the series to plot
+     * @param {string} args.config - the config as csv
+     */
+    plotScatter ({DF, config}) {
+        try {
+            const df = DF;
+        
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+      
+            const existingDiv = document.getElementById('scatter_plot');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+
+            const columns = config.split(',');
+
+      
+            const div = document.createElement('div');
+            div.id = 'scatter_plot';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+      
+            df.plot('scatter_plot').scatter({
+                config: {
+                    columns
+                }
+            });
+
+            htmlCanvas.innerHTML = div.outerHTML;
+      
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
+    }
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame | dfd.Series} args.DATA - the series to plot
+     * @param {string} args.config - the config as csv
+     */
+    plotTimeSeries ({DATA, config}) {
+        try {
+         
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+      
+            const existingDiv = document.getElementById('time_plot');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+      
+            const div = document.createElement('div');
+            div.id = 'time_plot';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+            // const columns = config.split(',');
+            if (DATA.ndim === 1) {
+                const series = DATA;
+
+                series.plot('time_plot').line();
+
+
+            } else if (DATA.ndim === 2) {
+                const df = DATA;
+
+      
+                df.plot('time_plot').line({
+                    // config: {
+                    //     columns
+                    // }
+                });
+
+      
+            }
+            htmlCanvas.innerHTML = div.outerHTML;
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+        }
+    }
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame | dfd.Series} args.DATA - the series to plot
+     * @param {string} args.config - the config as csv
+     */
+    plotPie ({DATA, LABEL, VALUE}) {
+        try {
+         
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+      
+            const existingDiv = document.getElementById('pie_plot');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+      
+            const div = document.createElement('div');
+            div.id = 'pie_plot';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+            // const columns = config.split(',');
+            if (DATA.ndim === 1) {
+                const series = DATA;
+
+                series.plot('pie_plot').pie({config: {values: VALUE, labels: LABEL}});
+
+
+            } else if (DATA.ndim === 2) {
+                const df = DATA;
+
+      
+                df.plot('pie_plot').pie({config: {values: VALUE, labels: LABEL}});
+
+      
+            }
+            htmlCanvas.innerHTML = div.outerHTML;
+            return;
+        } catch (err) {
+            console.log(err, 'Error pie');
+        }
+    }
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.DataFrame | dfd.Series} args.DATA - the series to plot
+     * @param {string} args.config - the config as csv
+     */
+    plotLine ({DATA, config}) {
+        try {
+         
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+      
+            const existingDiv = document.getElementById('line_plot');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+      
+            const div = document.createElement('div');
+            div.id = 'line_plot';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+            // const columns = config.split(',');
+            if (DATA.ndim === 1) {
+                const series = DATA;
+
+                series.plot('line_plot').line();
+
+
+            } else if (DATA.ndim === 2) {
+                const df = DATA;
+
+      
+                df.plot('line_plot').line({
+                    // config: {
+                    //     columns
+                    // }
+                });
+
+      
+            }
+            htmlCanvas.innerHTML = div.outerHTML;
             return;
         } catch (err) {
             console.log(err, 'Error plotting');
