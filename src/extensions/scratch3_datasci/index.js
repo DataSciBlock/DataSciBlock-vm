@@ -243,6 +243,8 @@ class Scratch3DataSciBlocks {
                         COLUMN: {
                             type: ArgumentType.STRING,
                             menu: 'COLUMN'
+
+                            
                         },
                         DF: {
                             type: ArgumentType.DATAFRAME,
@@ -285,6 +287,7 @@ class Scratch3DataSciBlocks {
                         COLUMN: {
                             defaultValue: 'age',
 
+                            menu: 'COLUMN',
                             type: ArgumentType.STRING
                         }
                     }
@@ -326,6 +329,7 @@ class Scratch3DataSciBlocks {
                         },
                         COLUMN: {
                             defaultValue: 'age',
+                            menu: 'COLUMN',
                             type: ArgumentType.STRING
                         }
                     }
@@ -431,6 +435,48 @@ class Scratch3DataSciBlocks {
                     opcode: 'sd',
                     blockType: BlockType.REPORTER,
                     text: 'standard deviation of [SERIES]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
+                    opcode: 'max',
+                    blockType: BlockType.REPORTER,
+                    text: 'max of series: [SERIES]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
+                    opcode: 'min',
+                    blockType: BlockType.REPORTER,
+                    text: 'min of series: [SERIES]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
+                    opcode: 'sum',
+                    blockType: BlockType.REPORTER,
+                    text: 'sum of series: [SERIES]',
 
                     terminal: false,
 
@@ -955,9 +1001,15 @@ class Scratch3DataSciBlocks {
      *
      */
     seriesFromCol ({DF, COLUMN}) {
-        const series = new dfd.Series(DF[COLUMN].values);
-        series.print();
-        return series;
+        try {
+
+            const series = new dfd.Series(DF[COLUMN].values);
+            series.print();
+            return series;
+        } catch (err) {
+            // console.error(err, 'Error series from col');
+            return 'error getting series from column';
+        }
     }
 
     rowFromDataframe ({DF, INDEX}) {
@@ -1143,6 +1195,54 @@ class Scratch3DataSciBlocks {
         series.print();
         return series.std();
     }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {series} args.SERIES - the series argument
+     * @returns {number} the result of the block
+     */
+    max ({SERIES}) {
+        // get csv from ../data/shark_attacks.csv
+
+        const series = SERIES;
+
+        return series.max();
+    }
+
+    
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {series} args.SERIES - the series argument
+     * @returns {number} the result of the block
+     */
+    min ({SERIES}) {
+        // get csv from ../data/shark_attacks.csv
+
+        const series = SERIES;
+
+        return series.min();
+    }
+    
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {series} args.SERIES - the series argument
+     * @returns {number} the result of the block
+     */
+    sum ({SERIES}) {
+        // get csv from ../data/shark_attacks.csv
+
+        const series = SERIES;
+
+        return series.sum();
+    }
+
+
     /**
      * implementation of the block with the opcode that matches this name
      * this will be called when the block is used
