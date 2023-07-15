@@ -243,8 +243,6 @@ class Scratch3DataSciBlocks {
                         COLUMN: {
                             type: ArgumentType.STRING,
                             menu: 'COLUMN'
-
-                            
                         },
                         DF: {
                             type: ArgumentType.DATAFRAME,
@@ -352,141 +350,192 @@ class Scratch3DataSciBlocks {
                         }
                     }
                 },
+                {
+                    opcode: 'rowsWhere',
+                    blockType: BlockType.REPORTER,
+                    text: 'Rows of [DF] where col: [COLUMN] [OP] [VALUE]',
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                    // arguments used in the block
+                    arguments: {
+                        DF: {
+                            type: ArgumentType.DATAFRAME,
+                            menu: 'DATAFRAME'
+                        },
+                        COLUMN: {
+                            type: ArgumentType.NUMBER,
+                            menu: 'COLUMN'
+                        },
+                        OP: {
+                            type: ArgumentType.STRING,
+                            menu: 'OP'
+                        },
+                        VALUE: {
+                            type: ArgumentType.STRING
+                        }
+                    }
+
+                },
                 '---',
+                // {
+                //     opcode: 'countSeries',
+                //     blockType: BlockType.REPORTER,
+
+                //     // label to display on the block
+                //     text: 'length of [SERIES]',
+
+                //     // true if this block should end a stack
+                //     terminal: false,
+
+                //     // where this block should be available for code - choose from:
+                //     //   TargetType.SPRITE - for code in sprites
+                //     //   TargetType.STAGE  - for code on the stage / backdrop
+                //     // remove one of these if this block doesn't apply to both
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'mean',
+                //     blockType: BlockType.REPORTER,
+
+                //     // label to display on the block
+                //     text: 'mean of [SERIES]',
+
+                //     // true if this block should end a stack
+                //     terminal: false,
+
+                //     // where this block should be available for code - choose from:
+                //     //   TargetType.SPRITE - for code in sprites
+                //     //   TargetType.STAGE  - for code on the stage / backdrop
+                //     // remove one of these if this block doesn't apply to both
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'mode',
+                //     blockType: BlockType.REPORTER,
+
+                //     // label to display on the block
+                //     text: 'mode of [SERIES]',
+
+                //     // true if this block should end a stack
+                //     terminal: false,
+
+                //     // where this block should be available for code - choose from:
+                //     //   TargetType.SPRITE - for code in sprites
+                //     //   TargetType.STAGE  - for code on the stage / backdrop
+                //     // remove one of these if this block doesn't apply to both
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+
                 {
-                    opcode: 'countSeries',
+                    opcode: 'statData',
                     blockType: BlockType.REPORTER,
 
                     // label to display on the block
-                    text: 'length of [SERIES]',
-
-                    // true if this block should end a stack
-                    terminal: false,
-
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
+                    text: '[STAT] of [DATA]',
                     filter: [TargetType.SPRITE, TargetType.STAGE],
                     arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
+                        STAT: {
+                            type: ArgumentType.STRING,
+                            menu: 'STAT'
+                        },
+                        DATA: {
+                            type: ArgumentType.DATAFRAME
+                            // menu: 'DATAFRAME'
+
                         }
                     }
                 },
-                {
-                    opcode: 'mean',
-                    blockType: BlockType.REPORTER,
+                // {
+                //     opcode: 'statSeries',
+                //     blockType: BlockType.REPORTER,
+                //     text: '[STAT] of [SERIES]',
 
-                    // label to display on the block
-                    text: 'mean of [SERIES]',
+                //     // true if this block should end a stack
+                //     terminal: false,
 
-                    // true if this block should end a stack
-                    terminal: false,
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         STAT: {
+                //             type: ArgumentType.STRING,
+                //             menu: 'STAT'
+                //         },
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'sd',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'standard deviation of [SERIES]',
 
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'mode',
-                    blockType: BlockType.REPORTER,
+                //     terminal: false,
 
-                    // label to display on the block
-                    text: 'mode of [SERIES]',
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'max',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'max of series: [SERIES]',
 
-                    // true if this block should end a stack
-                    terminal: false,
+                //     terminal: false,
 
-                    // where this block should be available for code - choose from:
-                    //   TargetType.SPRITE - for code in sprites
-                    //   TargetType.STAGE  - for code on the stage / backdrop
-                    // remove one of these if this block doesn't apply to both
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'median',
-                    blockType: BlockType.REPORTER,
-                    text: 'median of [SERIES]',
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'min',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'min of series: [SERIES]',
 
-                    // true if this block should end a stack
-                    terminal: false,
+                //     terminal: false,
 
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'sd',
-                    blockType: BlockType.REPORTER,
-                    text: 'standard deviation of [SERIES]',
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
+                // {
+                //     opcode: 'sum',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'sum of series: [SERIES]',
 
-                    terminal: false,
+                //     terminal: false,
 
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'max',
-                    blockType: BlockType.REPORTER,
-                    text: 'max of series: [SERIES]',
-
-                    terminal: false,
-
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'min',
-                    blockType: BlockType.REPORTER,
-                    text: 'min of series: [SERIES]',
-
-                    terminal: false,
-
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
-                {
-                    opcode: 'sum',
-                    blockType: BlockType.REPORTER,
-                    text: 'sum of series: [SERIES]',
-
-                    terminal: false,
-
-                    filter: [TargetType.SPRITE, TargetType.STAGE],
-                    arguments: {
-                        SERIES: {
-                            type: ArgumentType.SERIES
-                        }
-                    }
-                },
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+                //     arguments: {
+                //         SERIES: {
+                //             type: ArgumentType.SERIES
+                //         }
+                //     }
+                // },
                 {
                     opcode: 'countUniqueValues',
                     blockType: BlockType.REPORTER,
@@ -504,6 +553,17 @@ class Scratch3DataSciBlocks {
                 '---',
                 {
                     opcode: 'plotBarSeries',
+                    blockType: BlockType.COMMAND,
+                    text: 'plot bar chart of Series [SERIES]',
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        }
+                    }
+                },
+                {
+                    opcode: 'plotBoxSeries',
                     blockType: BlockType.COMMAND,
                     text: 'plot bar chart of Series [SERIES]',
                     filter: [TargetType.SPRITE, TargetType.STAGE],
@@ -589,6 +649,12 @@ class Scratch3DataSciBlocks {
                 },
                 TYPE: {
                     items: ['float32', 'int32', 'string', 'boolean', 'undefined']
+                },
+                OP: {
+                    items: ['==', '!=', '>', '<', '>=', '<=']
+                },
+                STAT: {
+                    items: ['count', 'mean', 'median', 'mode', 'std', 'max', 'min', 'sum', 'variance']
                 }
             }
         };
@@ -608,10 +674,10 @@ class Scratch3DataSciBlocks {
         const arr = [];
         this.DATASET_INFO.map((entry, index) => {
             const columns = this.getDFfromIndex(index + 1).axis.columns;
-            columns.map((column, i) => {
+            return columns.map((column, i) => {
                 if (!column) return null;
                 const obj = {};
-                obj.text = column;
+                obj.text = `(${index + 1}) ${column}`;
                 obj.value = column;
                 arr.push(obj);
                 return obj;
@@ -1023,6 +1089,69 @@ class Scratch3DataSciBlocks {
      * implementation of the block with the opcode that matches this name
      * this will be called when the block is used
      * @param {object} args - the block arguments
+     * @param {dfd.DataFrame | number} args.DF - the dataframe argument
+     * @param {string} args.COLUMN - the column argument
+     * @param {string} args.OP - the operator argument
+     * @param {string | number} args.VALUE - the value argument
+     * @returns {dfd.DataFrame} the result of the block
+     *
+     */
+    rowsWhere ({DF, COLUMN, OP, VALUE}) {
+        try {
+
+            let df;
+            df = DF;
+            if (Number.isInteger(Number(DF))) {
+                df = this.getDFfromIndex(Number(DF));
+            }
+            let valueToCompare = VALUE;
+            if (!isNaN(VALUE)) {
+                valueToCompare = Number(VALUE);
+            }
+            // const data = {Col1: [10, 45, 56, 10, 5],
+            //     Col2: [23, 20, 10, 24, '59']};
+            
+            // const x = new dfd.DataFrame(data);
+
+            // const df_rep = x.Col2.le(20);
+            // df_rep.print();
+            // const cc = "Count";
+            let result;
+            switch (OP) {
+            case '==':
+                result = df.loc({rows: df[COLUMN].eq(valueToCompare)});
+                result.print();
+                break;
+            case '!=':
+                result = df.query(df[COLUMN].ne(valueToCompare));
+                result.print();
+                break;
+            case '>':
+                result = df.query(df[COLUMN].gt(valueToCompare)); result.print();
+                break;
+            case '>=':
+                result = df.query(df[COLUMN].ge(valueToCompare)); result.print();
+                break;
+            case '<':
+                result = df.query(df[COLUMN].lt(valueToCompare)); result.print();
+                break;
+            case '<=':
+                result = df.query(df[COLUMN].le(valueToCompare)); result.print();
+                break;
+            default:
+                result = df;
+            }
+            return result;
+        } catch (err) {
+            console.error(err, 'Error rows where');
+            return err;
+        }
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
      * @param {dfd.DataFrame} args.DF - the dataframe argument
      * @param {string} args.COLUMN - the column argument
      * @returns {dfd.DataFrame} the result of the block
@@ -1088,7 +1217,7 @@ class Scratch3DataSciBlocks {
     /**
      * implementation of the block with the opcode that matches this name
      * this will be called when the block is used
-     * @param {object} args - the block arguments
+     * @param {object} args - the block argumento
      * @param {dfd.DataFrame} args.DF - the dataframe argument
      * @param {dfd.String} args.COLUMN - the dataframe argument
      * @returns {dfd.DataFrame} the result of the block
@@ -1098,6 +1227,59 @@ class Scratch3DataSciBlocks {
         const df = DF;
         df.drop({columns: [COLUMN], inplace: true});
         return df;
+    }
+
+    statData ({STAT, DATA}) {
+        try {
+
+        
+            let data = DATA;
+            if (Number.isInteger(DATA)) {
+                data = this.getDFfromIndex(DATA);
+            }
+
+
+            let df = false;
+            if (data.ndim === 2) {
+                df = true;
+                console.log('dataframe');
+            }
+
+            switch (STAT) {
+            case 'mean':
+                return data.mean();
+            case 'median':
+                return data.median();
+            case 'mode':
+                return data.mode();
+            case 'std':
+                return data.std();
+            case 'variance':
+                return data.var();
+            case 'min':
+                return data.min();
+            case 'max':
+                return data.max();
+            case 'sum':
+                return data.sum();
+            case 'count':
+                if (df) {
+                    return data.shape[0];
+                }
+
+                return data.count();
+
+            
+            default:
+                return data;
+        
+            }
+        } catch (err) {
+            console.error(err, 'Error stat data');
+            return err;
+        }
+
+
     }
 
     /**
