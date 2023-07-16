@@ -377,6 +377,33 @@ class Scratch3DataSciBlocks {
                     }
 
                 },
+                // {
+                //     opcode: 'removeRowsWhere',
+                //     blockType: BlockType.REPORTER,
+                //     text: 'remove Rows of [DF] where col: [COLUMN] [OP] [VALUE]',
+                //     terminal: false,
+                //     filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                //     // arguments used in the block
+                //     arguments: {
+                //         DF: {
+                //             type: ArgumentType.DATAFRAME,
+                //             menu: 'DATAFRAME'
+                //         },
+                //         COLUMN: {
+                //             type: ArgumentType.NUMBER,
+                //             menu: 'COLUMN'
+                //         },
+                //         OP: {
+                //             type: ArgumentType.STRING,
+                //             menu: 'OP'
+                //         },
+                //         VALUE: {
+                //             type: ArgumentType.STRING
+                //         }
+                //     }
+
+                // },
                 '---',
                 // {
                 //     opcode: 'countSeries',
@@ -506,7 +533,24 @@ class Scratch3DataSciBlocks {
                             type: ArgumentType.SERIES
                         },
                         QUANTILE: {
-                            type: ArgumentType.NUMBER,
+                            type: ArgumentType.NUMBER
+                        }
+                    }
+                },
+                {
+                    opcode: 'boxcox',
+                    blockType: BlockType.COMMAND,
+                    text: 'boxcox transform [SERIES] with lambda [LAMBDA]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        },
+                        LAMBDA: {
+                            type: ArgumentType.NUMBER
                         }
                     }
                 },
@@ -1164,14 +1208,7 @@ class Scratch3DataSciBlocks {
             if (!isNaN(VALUE)) {
                 valueToCompare = Number(VALUE);
             }
-            // const data = {Col1: [10, 45, 56, 10, 5],
-            //     Col2: [23, 20, 10, 24, '59']};
-            
-            // const x = new dfd.DataFrame(data);
-
-            // const df_rep = x.Col2.le(20);
-            // df_rep.print();
-            // const cc = "Count";
+         
             let result;
             switch (OP) {
             case '==':
@@ -1463,6 +1500,29 @@ class Scratch3DataSciBlocks {
         }
         const fraction = index - floor;
         return series.iat(floor) * (1 - fraction) + series.iat(ceil) * fraction;
+
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.Series} args.SERIES - the dataframe argument
+     * @param {string} args.COLUMN - the column argument
+     * @returns {number} the result of the block
+     */
+    boxcox ({SERIES, LAMBDA}) {
+        // get csv from ../data/shark_attacks.csv
+
+        const series = SERIES;
+        const lambda = Number(LAMBDA);
+        const transform = lambda === 0 ? value => Math.log(value) : value => (Math.pow(value, lambda) - 1) / lambda;
+
+        const transformedArr = series.apply(transform, {
+            inplace: true
+        });
+        
+        return transformedArr;
 
     }
 
