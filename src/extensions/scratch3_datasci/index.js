@@ -6,7 +6,7 @@ const dfd = require('danfojs');
 // const Cast = require('../../util/cast');
 const formatMessage = require('format-message');
 const StageLayering = require('../../engine/stage-layering');
-const RenderWebGL = require('../../../../scratch-render/src');
+// const RenderWebGL = require('../../../../scratch-render/src');
 /**
  * The instrument and drum sounds, loaded as static assets.
  * @type {object}
@@ -480,7 +480,6 @@ class Scratch3DataSciBlocks {
                 //         }
                 //     }
                 // },
-                // {
                 //     opcode: 'sd',
                 //     blockType: BlockType.REPORTER,
                 //     text: 'standard deviation of [SERIES]',
@@ -494,6 +493,23 @@ class Scratch3DataSciBlocks {
                 //         }
                 //     }
                 // },
+                {
+                    opcode: 'quantile',
+                    blockType: BlockType.REPORTER,
+                    text: '[QUANTILE]-th quantile of [SERIES]',
+
+                    terminal: false,
+
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+                    arguments: {
+                        SERIES: {
+                            type: ArgumentType.SERIES
+                        },
+                        QUANTILE: {
+                            type: ArgumentType.NUMBER,
+                        }
+                    }
+                },
                 // {
                 //     opcode: 'max',
                 //     blockType: BlockType.REPORTER,
@@ -565,7 +581,7 @@ class Scratch3DataSciBlocks {
                 {
                     opcode: 'plotBoxSeries',
                     blockType: BlockType.COMMAND,
-                    text: 'plot bar chart of Series [SERIES]',
+                    text: 'plot box chart of Series [SERIES]',
                     filter: [TargetType.SPRITE, TargetType.STAGE],
                     arguments: {
                         SERIES: {
@@ -576,16 +592,27 @@ class Scratch3DataSciBlocks {
                 {
                     opcode: 'plotScatter',
                     blockType: BlockType.COMMAND,
-                    text: 'plot scatter plot [DF] with config [config]',
+                    text: 'plot scatter plot [DF] x: [X], y: [Y]',
                     filter: [TargetType.SPRITE, TargetType.STAGE],
                     arguments: {
                         DF: {
                             type: ArgumentType.DATAFRAME
                         },
-                        config: {
+                        X: {
                             type: ArgumentType.STRING,
-                            defaultValue: 'x,y'
+                            // defaultValue: 'x'
+                            menu: 'COLUMN'
+
+                        },
+                        Y: {
+                            type: ArgumentType.STRING,
+                            menu: 'COLUMN'
+                            // defaultValue: 'y'
                         }
+                        // config: {
+                        //     type: ArgumentType.STRING,
+                        //     defaultValue: 'x,y'
+                        // }
                     }
                 },
                 {
@@ -861,12 +888,13 @@ class Scratch3DataSciBlocks {
      *  this will be called when the block is used
      * @param {object} args - the block arguments
      * @param {dfd.DataFrame} args.DF - the series to plot
-     * @param {string} args.config - the config as csv
+     * @param {string} args.X - the x column
+     * @param {string} args.Y - the y column
      */
-    plotScatter ({DF, config}) {
+    plotScatter ({DF, X, Y}) {
         try {
             const df = DF;
-        
+      
             const canvas = this.renderer.canvas;
             const htmlCanvas = document.getElementById('html-canvas');
       
@@ -874,9 +902,6 @@ class Scratch3DataSciBlocks {
             if (existingDiv) {
                 htmlCanvas.removeChild(existingDiv);
             }
-
-            const columns = config.split(',');
-
       
             const div = document.createElement('div');
             div.id = 'scatter_plot';
@@ -884,10 +909,41 @@ class Scratch3DataSciBlocks {
             document.body.appendChild(div);
       
             df.plot('scatter_plot').scatter({
-                config: {
-                    columns
-                }
+                config: {x: X, y: Y}
             });
+      
+            htmlCanvas.innerHTML = div.outerHTML;
+      
+            return;
+        } catch (err) {
+            console.log(err, 'Error plotting');
+            return;
+        }
+    }
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.Series} args.SERIES - the series to plot
+     */
+    plotBoxSeries ({SERIES}) {
+        try {
+            const series = SERIES;
+        
+            const canvas = this.renderer.canvas;
+            const htmlCanvas = document.getElementById('html-canvas');
+      
+            const existingDiv = document.getElementById('box_plot');
+            if (existingDiv) {
+                htmlCanvas.removeChild(existingDiv);
+            }
+
+            const div = document.createElement('div');
+            div.id = 'box_plot';
+            div.style = canvas.style;
+            document.body.appendChild(div);
+      
+            series.plot('box_plot').box();
 
             htmlCanvas.innerHTML = div.outerHTML;
       
@@ -1376,6 +1432,38 @@ class Scratch3DataSciBlocks {
 
         series.print();
         return series.std();
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     * this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {dfd.Series} args.SERIES - the dataframe argument
+     * @param {string} args.COLUMN - the column argument
+     * @returns {number} the result of the block
+     */
+    quantile ({SERIES, QUANTILE}) {
+        // get csv from ../data/shark_attacks.csv
+
+        const series = SERIES;
+        const quantile = Number(QUANTILE);
+
+        series.sortValues({inplace: true});
+            
+        // Calculate the index based on the quantile value
+        const index = (series.count() - 1) * quantile;
+            
+        // Get the floor and ceiling values for interpolation
+        const floor = Math.floor(index);
+        const ceil = Math.ceil(index);
+            
+        // Check if the index is an integer
+        if (floor === ceil) {
+            return series.iat(floor);
+        }
+        const fraction = index - floor;
+        return series.iat(floor) * (1 - fraction) + series.iat(ceil) * fraction;
+
     }
 
     /**
