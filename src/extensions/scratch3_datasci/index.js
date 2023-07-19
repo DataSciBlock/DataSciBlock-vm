@@ -162,11 +162,9 @@ class Scratch3DataSciBlocks {
                 {
                     // name of the function where your block code lives
                     opcode: 'uploadedDataframe',
-
                     blockType: BlockType.REPORTER,
-
                     // label to display on the block
-                    text: 'Dataframe of [NAME]; [LINES] lines',
+                    text: 'Dataframe of [NAME]',
 
                     // true if this block should end a stack
                     terminal: false,
@@ -175,6 +173,31 @@ class Scratch3DataSciBlocks {
 
                     arguments: {
                         NAME: {
+                            type: ArgumentType.STRING,
+                            menu: 'DATAFRAME'
+                        },
+                        LINES: {
+                            defaultValue: 20,
+                            type: ArgumentType.NUMBER
+                        }
+                    }
+                },
+                {
+                    // name of the function where your block code lives
+                    opcode: 'sampleData',
+                    blockType: BlockType.REPORTER,
+                    text: '[METHOD] of [DF]; [LINES] lines',
+
+                    // true if this block should end a stack
+                    terminal: false,
+                    filter: [TargetType.SPRITE, TargetType.STAGE],
+
+                    arguments: {
+                        METHOD: {
+                            type: ArgumentType.STRING,
+                            menu: 'METHOD'
+                        },
+                        DF: {
                             type: ArgumentType.STRING,
                             menu: 'DATAFRAME'
                         },
@@ -726,6 +749,9 @@ class Scratch3DataSciBlocks {
                 },
                 STAT: {
                     items: ['count', 'mean', 'median', 'mode', 'std', 'max', 'min', 'sum', 'variance']
+                },
+                METHOD: {
+                    items: ['head', 'tail', 'random']
                 }
             }
         };
@@ -744,7 +770,7 @@ class Scratch3DataSciBlocks {
        
         const arr = [];
         this.DATASET_INFO.map((entry, index) => {
-            const columns = this.getDFfromIndex(index + 1).axis.columns;
+            const columns = this.getDF(index + 1).axis.columns;
             return columns.map((column, i) => {
                 if (!column) return null;
                 const obj = {};
@@ -760,7 +786,12 @@ class Scratch3DataSciBlocks {
         
     }
 
-    getDFfromIndex (index) {
+    getDF (df) {
+        const index = Number(df);
+        if (isNaN(index)) {
+            console.log('it is not a number');
+            return df;
+        }
         const i = index - 1;
         if (i === -1) {
             console.error('No dataset found with name:', index);
@@ -836,17 +867,47 @@ class Scratch3DataSciBlocks {
      *  this will be called when the block is used
      * @param {object} args - the block arguments
      * @param {string} args.NAME - the number argument
-     * @param {number?} args.LINES - the number argument
+    //  * @param {number?} args.LINES - the number argument
      * @returns {Array.<{caseNumber: number, gender: string, age: number, activity: string}>} the result of the block (an array of objects with caseNumber, gender, age, and activity properties)
      */
-    uploadedDataframe ({NAME, LINES}) {
+    uploadedDataframe ({NAME}) {
         // get csv from ../data/shark_attacks.csv
-        const df = this.getDFfromIndex(NAME);
+        const df = this.getDF(NAME);
         df.print();
-        console.log('LINES', LINES, typeof LINES);
 
 
-        return LINES <= 0 ? df : df.head(LINES);
+        return df;
+        
+    }
+
+    /**
+     * implementation of the block with the opcode that matches this name
+     *  this will be called when the block is used
+     * @param {object} args - the block arguments
+     * @param {string} args.METHOD - the method to get sample
+     * @param {dfd.DataFrame} args.DF - the dataframe
+     * @param {number?} args.LINES - the lines
+     * @returns {dfd.DataFrame} result from sample
+     */
+    sampleData ({METHOD, DF, LINES}) {
+        
+        const df = this.getDF(DF);
+        const lines = Number(LINES);
+        if (Number.isNaN(Number(lines))) {
+            return 'Lines must be a number';
+        }
+        switch (METHOD) {
+        case 'head':
+            return df.head(lines);
+        case 'tail':
+            return df.tail(lines);
+        case 'random':
+            return df.sample(lines);
+        default:
+            return df.head(lines);
+        }
+        // if df is string, get df from index
+
         
     }
 
@@ -1202,7 +1263,7 @@ class Scratch3DataSciBlocks {
             let df;
             df = DF;
             if (Number.isInteger(Number(DF))) {
-                df = this.getDFfromIndex(Number(DF));
+                df = this.getDF(Number(DF));
             }
             let valueToCompare = VALUE;
             if (!isNaN(VALUE)) {
@@ -1328,7 +1389,7 @@ class Scratch3DataSciBlocks {
         
             let data = DATA;
             if (Number.isInteger(DATA)) {
-                data = this.getDFfromIndex(DATA);
+                data = this.getDF(DATA);
             }
 
 
